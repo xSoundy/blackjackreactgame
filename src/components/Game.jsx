@@ -4,7 +4,7 @@ const Game = () => {
     const [deck, setDeck] = useState([]);
     const [playerHand, setPlayerHand] = useState([]);
     const [dealerHand, setDealerHand] = useState([]);
-    const [gameStatus, setGameStatus] = useState('playing');
+    const [gameStatus, setGameStatus] = useState('not started');
 
     const initializeDeck = () => {
         const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
@@ -16,19 +16,30 @@ const Game = () => {
                 newDeck.push({suit, value});
             });
         });
-        setDeck(newDeck);
+        
+        for (let i = newDeck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+        }
+        setDeck(newDeck)
     }
 
     const dealCards = () => {
-        const newPlayerHand = [deck.pop(), deck.pop()];
-        const newDealerHand = [deck.pop(), deck.pop()];
+        const updatedDeck = [...deck];
+        const newPlayerHand = [updatedDeck.pop(), updatedDeck.pop()];
+        const newDealerHand = [updatedDeck.pop(), updatedDeck.pop()];
+        setDeck(updatedDeck);
         setPlayerHand(newPlayerHand);
         setDealerHand(newDealerHand);
     }
 
     const startGame = () => {
         initializeDeck();
-        dealCards();
+        //setTimeout(() => {
+            if (deck.length > 0) {
+                dealCards();
+            }
+        //}, 100);
         setGameStatus('playing');
     }
 
