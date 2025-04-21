@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 const Game = () => {
     const [deck, setDeck] = useState([]);
@@ -6,7 +6,7 @@ const Game = () => {
     const [dealerHand, setDealerHand] = useState([]);
     const [gameResult, setGameResult] = useState('');
     const [playerTurn, setPlayerTurn] = useState(true);
-    //const [gameStatus, setGameStatus] = useState('not started');
+    const [dealerDrawing, setDealerDrawing] = useState(false);
 
     const initializeDeck = () => {
         const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
@@ -27,24 +27,31 @@ const Game = () => {
     }
 
     const dealCards = () => {
-        const updatedDeck = [...deck];
-        const newPlayerHand = [updatedDeck.pop(), updatedDeck.pop()];
-        const newDealerHand = [updatedDeck.pop(), updatedDeck.pop()];
-        setDeck(updatedDeck);
-        setPlayerHand(newPlayerHand);
-        setDealerHand(newDealerHand);
+        setDeck(prevDeck => {
+            const updatedDeck = [...prevDeck];
+            const newPlayerHand = [updatedDeck.pop(), updatedDeck.pop()];
+            const newDealerHand = [updatedDeck.pop(), updatedDeck.pop()];
+        
+            setPlayerHand(newPlayerHand);
+            setDealerHand(newDealerHand);
+            return updatedDeck;
+        })
     }
 
     const startGame = () => {
-        initializeDeck();
-        setTimeout(() => {
-            if (deck.length > 0) {
-                dealCards();
-            }
-        }, 100);
-        setPlayerTurn(true);
+        setPlayerHand([]);
+        setDealerHand([]);
         setGameResult('');
+        setPlayerTurn(true);
+        setDealerDrawing(false);
+        initializeDeck();
     }
+
+    useEffect(() => {
+        if (deck.length === 52) {
+            dealCards();
+        }
+    }, [deck])
 
     const calculateHandValue = (hand) => {
         let value = 0;
@@ -68,9 +75,10 @@ const Game = () => {
 
     const playerHit = () => {
         if (playerTurn) {
+            setDeck();
             const updatedDeck = [...deck];
             const newPlayerHand = [...playerHand, updatedDeck.pop()];
-            setDeck(updatedDeck);
+            
             setPlayerHand(newPlayerHand);
             if (calculateHandValue(newPlayerHand) > 21) {
                 setGameResult('Player busts! Dealer wins!');
@@ -84,17 +92,43 @@ const Game = () => {
         dealerTurn();
     }
 
-    const dealerTurn = () => {
-        let dealerHandValue = calculateHandValue(dealerHand);
-        while (dealerHandValue < 17) {
-            const updatedDeck = [...deck];
-            const newDealerHand = [...dealerHand, updatedDeck.pop()];
-            setDeck(updatedDeck);
-            setDealerHand(newDealerHand);
-            dealerHandValue = calculateHandValue(newDealerHand);
+    //const dealerTurn = () => {
+    //    let dealerHandValue = calculateHandValue(dealerHand);
+    //    while (dealerHandValue < 17) {
+    //        const updatedDeck = [...deck];
+    //        const newDealerHand = [...dealerHand, updatedDeck.pop()];
+    //        setDeck(updatedDeck);
+    //        setDealerHand(newDealerHand);
+    //        dealerHandValue = calculateHandValue(newDealerHand);
+    //    }
+    //    determineWinner();
+    //}
+
+    useEffect(() => {
+        if (dealerDrawing) {
+            const dealerValue = calculateHandValue(dealerHand);
+            
+            if (dealerValue < 17) {
+                const drawDealerCard = setTimeout(() => {
+                    setDeck(prevDeck => {
+                        if (prevDeck.length === 0) {
+                            setGameResult('No more cards in the deck!');
+                            setDealerDrawing(false);
+                            return prevDeck;
+                        }
+                        const updatedDeck = [...prevDeck];
+                        const card = updatedDeck.pop();
+                        setDealerHand(prevHand => [...prevHand, card]);
+                        return updatedDeck;
+                    })
+                }, 500)
+                return () => clearTimeout(drawDealerCard);
+            } else {
+                setDealerDrawing(false);
+                determineWinner();
+            }
         }
-        determineWinner();
-    }
+    }, [dealerDrawing, dealerHand]);
 
     const determineWinner = () => {
         const playerHandValue = calculateHandValue(playerHand);
