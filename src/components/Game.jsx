@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Game = () => {
     const [deck, setDeck] = useState([]);
@@ -15,10 +15,10 @@ const Game = () => {
 
         suits.forEach(suit => {
             values.forEach(value => {
-                newDeck.push({suit, value});
+                newDeck.push({ suit, value });
             });
         });
-        
+
         for (let i = newDeck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -31,7 +31,7 @@ const Game = () => {
             const updatedDeck = [...prevDeck];
             const newPlayerHand = [updatedDeck.pop(), updatedDeck.pop()];
             const newDealerHand = [updatedDeck.pop(), updatedDeck.pop()];
-        
+
             setPlayerHand(newPlayerHand);
             setDealerHand(newDealerHand);
             return updatedDeck;
@@ -75,21 +75,28 @@ const Game = () => {
 
     const playerHit = () => {
         if (playerTurn) {
-            setDeck();
-            const updatedDeck = [...deck];
-            const newPlayerHand = [...playerHand, updatedDeck.pop()];
-            
-            setPlayerHand(newPlayerHand);
-            if (calculateHandValue(newPlayerHand) > 21) {
-                setGameResult('Player busts! Dealer wins!');
-                setPlayerTurn(false);
-            }
+            setDeck(prevDeck => {
+                const updatedDeck = [...prevDeck];
+                const card = updatedDeck.pop();
+
+                setPlayerHand(prevHand => {
+                    const newHand = [...prevHand, card];
+
+                    if (calculateHandValue(newHand) > 21) {
+                        setGameResult('Player busts! Dealer wins!');
+                        setPlayerTurn(false);
+                    }
+
+                    return newHand;
+                })
+                return updatedDeck;
+            })
         }
-    }
+    };
 
     const playerStand = () => {
         setPlayerTurn(false);
-        dealerTurn();
+        setDealerDrawing(true);
     }
 
     //const dealerTurn = () => {
@@ -107,7 +114,7 @@ const Game = () => {
     useEffect(() => {
         if (dealerDrawing) {
             const dealerValue = calculateHandValue(dealerHand);
-            
+
             if (dealerValue < 17) {
                 const drawDealerCard = setTimeout(() => {
                     setDeck(prevDeck => {
@@ -162,7 +169,7 @@ const Game = () => {
                     <div key={index}>{card.value} of {card.suit}</div>
                 ))}
             </div>
-            {gameResult && <h2>{gameResult}</h2>}   
+            {gameResult && <h2>{gameResult}</h2>}
         </div>
     );
 };
