@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+// Initialize all the game variables and states using React's useState hook
 const Game = () => {
     const [deck, setDeck] = useState([]);
     const [playerHand, setPlayerHand] = useState([]);
@@ -8,6 +9,7 @@ const Game = () => {
     const [playerTurn, setPlayerTurn] = useState(true);
     const [dealerDrawing, setDealerDrawing] = useState(false);
 
+    // Builds a full deck of 52 playing cards and then shuffles them into a random order using the math.random() function
     const initializeDeck = () => {
         const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Q', 'K', 'A'];
@@ -38,6 +40,7 @@ const Game = () => {
     //     })
     // }
 
+    // Clears previous state, shuffles a fresh deck, deals cards, and updates states
     const startGame = () => {
         setPlayerHand([]);
         setDealerHand([]);
@@ -54,12 +57,15 @@ const Game = () => {
         setDeck(newDeck);
     }
 
+    // Deals two cards to player and dealer when the deck is full (52 cards)
     useEffect(() => {
         if (deck.length === 52) {
             dealCards();
         }
     }, [deck])
 
+    // Calculates the value of a hand in blackjack, accounting for Aces being worth 1 or 11 and face cards being worth 10
+    // The function iterates through the hand, summing the values of the cards and adjusting for Aces as needed
     const calculateHandValue = (hand) => {
         let value = 0;
         let aceCount = 0;
@@ -102,6 +108,8 @@ const Game = () => {
     //};
 
 
+    // The playerHit function is called when the player chooses to hit. It draws a card from the deck and adds it to the player's hand.
+    // If the player's hand value exceeds 21, the game result is set to "Player busts! Dealer wins!" and the player's turn ends.
     const playerHit = () => {
         if (!playerTurn || deck.length === 0) return;
 
@@ -124,6 +132,8 @@ const Game = () => {
         }
     }
 
+    // The playerStand function is called when the player chooses to stand. It ends the player's turn and starts the dealer's drawing phase.
+    // The dealer will draw cards until their hand value is 17 or higher, or they bust.
     const playerStand = () => {
         setPlayerTurn(false);
         setDealerDrawing(true);
@@ -141,6 +151,8 @@ const Game = () => {
     //    determineWinner();
     //}
 
+    // The dealerTurn function is called when the dealer's turn begins. It draws cards until the dealer's hand value is 17 or higher.
+    // If the dealer busts, the game result is set to "Dealer busts! Player wins!" and the game ends.
     useEffect(() => {
         if (dealerDrawing) {
             const dealerValue = calculateHandValue(dealerHand);
@@ -173,6 +185,8 @@ const Game = () => {
         }
     }, [dealerDrawing, dealerHand, deck]);
 
+    // The determineWinner function is called at the end of the game to compare the player's and dealer's hand values and determine the winner.
+    // It sets the game result based on the comparison and ends the player's turn.
     const determineWinner = () => {
         const playerHandValue = calculateHandValue(playerHand);
         const dealerHandValue = calculateHandValue(dealerHand);
@@ -188,6 +202,8 @@ const Game = () => {
         setPlayerTurn(false);
     };
 
+    // The displayCard function is used to render a card with its value and suit. It uses symbols for the suits and applies color based on the suit.
+    // The function returns a styled span element with the card's value and suit symbol.
     const displayCard = (card) => {
         if (!card) return null;
 
@@ -323,6 +339,7 @@ const Game = () => {
     );
 };
 
+// Export the Game component as the default export of this module
 export default Game;
 
    //<div>
